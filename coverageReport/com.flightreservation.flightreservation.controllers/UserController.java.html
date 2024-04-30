@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">flightreservation</a> &gt; <a href="index.source.html" class="el_package">com.flightreservation.flightreservation.controllers</a> &gt; <span class="el_source">UserController.java</span></div><h1>UserController.java</h1><pre class="source lang-java linenums">package com.flightreservation.flightreservation.controllers;
+
+import com.flightreservation.flightreservation.domains.User;
+import com.flightreservation.flightreservation.exceptions.UserAlreadyRegistered;
+import com.flightreservation.flightreservation.exceptions.UserNotFound;
+import com.flightreservation.flightreservation.repositories.UserRepository;
+import com.flightreservation.flightreservation.services.SecurityService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.Optional;
+
+@Controller
+<span class="nc" id="L22">public class UserController {</span>
+
+	@Autowired
+	private UserRepository userRepository;
+
+	@Autowired
+	private BCryptPasswordEncoder bCryptPasswordEncoder;
+
+	@Autowired
+	private SecurityService securityService;
+
+<span class="nc" id="L33">	private static final Logger LOGGER = LoggerFactory.getLogger(UserController.class);</span>
+
+	@RequestMapping(&quot;/showReg&quot;)
+	public String showRegistrationPage() {
+<span class="nc" id="L37">		LOGGER.info(&quot;Inside showRegistrationPage()&quot;);</span>
+<span class="nc" id="L38">		return &quot;login/registerUser&quot;;</span>
+	}
+
+	@RequestMapping(value = &quot;/registerUser&quot;, method = RequestMethod.POST)
+	public String register(@ModelAttribute(&quot;user&quot;) User user) {
+		// handle error here what is email already exists.
+<span class="nc" id="L44">		LOGGER.info(&quot;{} Inside register()&quot;, user.getEmail());</span>
+<span class="nc" id="L45">		Optional&lt;User&gt; foundUser = userRepository.findByEmail(user.getEmail());</span>
+<span class="nc bnc" id="L46" title="All 2 branches missed.">		if (foundUser.isPresent()) {</span>
+<span class="nc" id="L47">			LOGGER.error(&quot;User is already registered with email {} &quot;, user.getEmail());</span>
+<span class="nc" id="L48">			throw new UserAlreadyRegistered(&quot;Email exists: &quot; + user.getEmail());</span>
+		}
+<span class="nc" id="L50">		LOGGER.info(&quot;Email Exists: &quot; + user.getEmail());</span>
+<span class="nc" id="L51">		user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));</span>
+<span class="nc" id="L52">		userRepository.save(user);</span>
+<span class="nc" id="L53">		return &quot;login/login&quot;;</span>
+	}
+
+	@RequestMapping(&quot;/showLogin&quot;)
+	public String showLoginPage() {
+<span class="nc" id="L58">		LOGGER.info(&quot;Inside showLoginPage()&quot;);</span>
+<span class="nc" id="L59">		return &quot;login/login&quot;;</span>
+	}
+
+	@RequestMapping(value = &quot;/login&quot;, method = RequestMethod.POST)
+	public String login(@RequestParam(&quot;email&quot;) String email, @RequestParam(&quot;password&quot;) String password,
+			ModelMap modelmap) {
+<span class="nc" id="L65">		LOGGER.info(&quot;{} Inside login()&quot;, email);</span>
+<span class="nc" id="L66">		Optional&lt;User&gt; foundUser = userRepository.findByEmail(email);</span>
+		// handle error here what if no user found
+<span class="nc bnc" id="L68" title="All 2 branches missed.">		if (!foundUser.isPresent()) {</span>
+<span class="nc" id="L69">			LOGGER.error(&quot;Email not found: &quot; + email);</span>
+<span class="nc" id="L70">			throw new UserNotFound(&quot;Email not found: &quot; + email);</span>
+		}
+<span class="nc" id="L72">		LOGGER.info(&quot;Email Exists: &quot; + email);</span>
+<span class="nc" id="L73">		boolean loginResponse = securityService.login(email, password);</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">		if (loginResponse) {</span>
+<span class="nc" id="L75">			modelmap.addAttribute(&quot;msg&quot;, &quot;Successfully logged in&quot;);</span>
+<span class="nc" id="L76">			return &quot;flights/findFlights&quot;;</span>
+		}
+		else {
+<span class="nc" id="L79">			LOGGER.info(&quot;User entered Invalid credentials email:{} and password:{}&quot;, email, password);</span>
+<span class="nc" id="L80">			modelmap.addAttribute(&quot;msg&quot;, &quot;Invalid username or password&quot;);</span>
+		}
+<span class="nc" id="L82">		return &quot;login/login&quot;;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

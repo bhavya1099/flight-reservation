@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FlightController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">flightreservation</a> &gt; <a href="index.source.html" class="el_package">com.flightreservation.flightreservation.controllers</a> &gt; <span class="el_source">FlightController.java</span></div><h1>FlightController.java</h1><pre class="source lang-java linenums">package com.flightreservation.flightreservation.controllers;
+
+import com.flightreservation.flightreservation.domains.Flight;
+import com.flightreservation.flightreservation.repositories.FlightRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.Date;
+import java.util.List;
+
+@Controller
+<span class="nc" id="L19">public class FlightController {</span>
+
+<span class="nc" id="L21">	private static final Logger LOGGER = LoggerFactory.getLogger(FlightController.class);</span>
+
+	@Autowired
+	FlightRepository flightRepository;
+
+	@RequestMapping(&quot;/findFlights&quot;)
+	public String findFLights(@RequestParam(&quot;source&quot;) String source, @RequestParam(&quot;destination&quot;) String destination,
+			@RequestParam(&quot;departDate&quot;) @DateTimeFormat(pattern = &quot;MM-dd-yyyy&quot;) Date departDate, ModelMap modelMap) {
+
+<span class="nc" id="L30">		LOGGER.info(&quot;Inside findFlights() From:&quot; + source + &quot; TO:&quot; + destination + &quot;Departure Date: &quot; + departDate);</span>
+<span class="nc" id="L31">		List&lt;Flight&gt; flights = flightRepository.findFlights(source, destination, departDate);</span>
+<span class="nc" id="L32">		modelMap.addAttribute(&quot;flights&quot;, flights);</span>
+<span class="nc" id="L33">		LOGGER.info(&quot;Flights found are&quot; + flights.toString());</span>
+<span class="nc" id="L34">		return &quot;flights/displayFlights&quot;;</span>
+	}
+
+	@RequestMapping(&quot;/admin/showAddFlight&quot;)
+	public String showAddFlightPage() {
+<span class="nc" id="L39">		return &quot;flights/addFlight&quot;;</span>
+	}
+
+	@RequestMapping(&quot;/admin/addFlight&quot;)
+	public String addFlight(@ModelAttribute(&quot;flight&quot;) Flight flight, ModelMap modelmap) {
+<span class="nc" id="L44">		flightRepository.save(flight);</span>
+<span class="nc" id="L45">		modelmap.addAttribute(&quot;msg&quot;, &quot;Flight Added Successfully&quot;);</span>
+<span class="nc" id="L46">		return &quot;flights/addFlight&quot;;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
